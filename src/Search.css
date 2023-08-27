@@ -1,0 +1,50 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.Container {
+  padding: 2.5em;
+}
+
+.TextInput {
+  padding: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 1.0em;
+}
+
+.TwoColumnList {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.Matchup {
+  color: '#FFFFFF';
+  font-weight: bold;
+  font-size: 18px;
+  flex: 0 0 50%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.Loader {
+  height: 4.0em;
+  width: 4.0em;
+  border: 0.5em solid;
+  border-color: white transparent white transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+  margin-top: 2.0em;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
