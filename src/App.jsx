@@ -6,10 +6,9 @@ import Game from './Game';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename=''>
       <Routes>
-        <Route index element={<Home />} />
-        <Route path="/Home" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/Search" element={<Search />} />
         <Route path="/:gameID" element={<Game />} />
       </Routes>
