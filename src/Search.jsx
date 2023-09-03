@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import './Search.css';
-import { getGameResult, BACKEND } from './parser';
+import { getGameHeader, BACKEND } from './parser';
+import { useNavigate } from 'react-router-dom';
 
 function Search() {
+    const navigate = useNavigate();
     const [gameIDs, setGameIDs] = useState([]);
-    const [gameResults, setGameResults] = useState({});
+    const [gameHeaders, setGameHeaders] = useState({});
     const [year, setYear] = useState('');
     const [week, setWeek] = useState('');
     const [loading, setLoading] = useState(false);
@@ -35,17 +37,17 @@ function Search() {
     // when gameIDs changes update gameResults
     useEffect(() => {
         setLoading(true);
-        // Populate gameResults map with gameIDs as keys and results as values
-        const populateGameResults = async () => {
+        // Populate gameHeaders map with gameIDs as keys and results as values
+        const populateGameHeaders = async () => {
             const newGameResults = new Map();
             for (const gameID of gameIDs) {
-                const gameResult = await getGameResult(gameID);
-                newGameResults.set(gameID, gameResult);
+                const gameHeader = await getGameHeader(gameID);
+                newGameResults.set(gameID, gameHeader);
             }
-            setGameResults(newGameResults);
+            setGameHeaders(newGameResults);
             setLoading(false);
         };
-        populateGameResults();
+        populateGameHeaders();
     }, [gameIDs]);
 
     async function getGameIDs() {
@@ -72,6 +74,9 @@ function Search() {
     return (
         <div>
             <h1>Search</h1>
+            <div className="SubText">
+                <p>Search for any slate of regular season NFL games dating back to 2001</p>
+            </div>
             <div className="Container">
                 Year:
                 <input className="TextInput"
@@ -97,10 +102,11 @@ function Search() {
                 <ul className="TwoColumnList">
                     {gameIDs.map(gameID => (
                         <li key={gameID} className="Matchup">
-                            <a href={`https://www.espn.com/nfl/playbyplay/_/gameId/${gameID}`} target="_blank" rel="noopener noreferrer"
-                                className="Matchup">
-                                {gameResults.get(gameID)}
-                            </a>
+                            <button className="Matchup" onClick={() => {
+                                window.open(`/${gameID}`, '_blank');
+                            }}>
+                                {gameHeaders.get(gameID)}
+                            </button>
                         </li>
                     ))}
                 </ul>

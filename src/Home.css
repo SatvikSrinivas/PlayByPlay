@@ -12,28 +12,23 @@
     transition: filter 300ms;
 }
 
-.logo:hover {
-    filter: drop-shadow(0 0 2em #fd9f5f);
+.Header {
+    color: '#FF0000';
+    font-weight: bolder;
+    font-size: 70px;
 }
 
-@keyframes logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    a:nth-of-type(2) .logo {
-        animation: logo-spin infinite 20s linear;
-    }
+.subtext {
+    color: '#FFFFFF';
+    font-weight: 600;
+    font-size: 20px;
 }
 
 .button {
-    padding: 0.5em;
+    padding: 1.25em;
+    color: '#FFFFFF';
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .caption {

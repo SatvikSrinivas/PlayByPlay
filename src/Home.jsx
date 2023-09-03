@@ -8,17 +8,14 @@ function Home() {
 
     return (
         <div className="Home">
-            <div>
-            </div>
-            <h1>Play By Play</h1>
-            <p>
+            <h1 className = "Header">Play By Play</h1>
+            <p className = "subtext">
                 Want more than just a box score?
-                <div className="button">
-                    <button className="button" onClick={() => { navigate('/Search') }}>
-                        Try Me!
-                    </button>
-                </div>
             </p>
+            <div className="button">
+                <button className="button" onClick={() => { navigate('/Search') }}>
+                    Discover meaningful insights derived from analyzing NFL play-by-play data </button>
+            </div>
             <img src={"https://aranceei.sirv.com/Images/nfl.jpg"} className="logo" />
             <p className="caption">
                 Photo by Adrian Curiel on Unsplash

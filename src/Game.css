@@ -1,0 +1,15 @@
+.Loader {
+  height: 4.0em;
+  width: 4.0em;
+  border: 0.5em solid;
+  border-color: white transparent white transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+  margin-top: 2.0em;
+}
+
+.dropdown-container {
+  display: flex;
+  justify-content: space-between;
+}

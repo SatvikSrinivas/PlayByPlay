@@ -1,0 +1,22 @@
+/* ToggleButton.css */
+
+.toggle-button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.toggle-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #0074D9;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-button:hover {
+    background-color: #0056b3;
+}
