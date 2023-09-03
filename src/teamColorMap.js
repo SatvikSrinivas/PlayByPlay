@@ -10,7 +10,7 @@ export const teamColorMap = {
     "Dallas Cowboys": '#003594',
     "Denver Broncos": '#FB4F14',
     "Detroit Lions": '#0076B6',
-    "Green Bay Packers": '#FFB612',
+    "Green Bay Packers": '#203731',
     "Houston Texans": '#03202F',
     "Indianapolis Colts": '#002C5F',
     "Jacksonville Jaguars": '#006778',

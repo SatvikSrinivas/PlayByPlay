@@ -6,6 +6,7 @@ function DataTable(props) {
     const name = props.name;
     const title = props.title;
     const headers = props.headers;
+    const categories = props.categories;
 
     return (
         <div>
@@ -21,7 +22,7 @@ function DataTable(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {['1st', '2nd', '3rd', '4th'].map((down) => (
+                    {categories.map((down) => (
                         <tr key={down}>
                             <td>{down}</td>
                             {headers.slice(1).map((key) => (

@@ -63,30 +63,27 @@ export const getDriveInfo = async (gameID) => {
         }
         else if (allPlysIndex !== -1) {
             let endGameIndex = -1, endTokensIndex = 0;
-            while (endGameIndex === -1 && endTokensIndex < endTokens.length) {
+            while (endGameIndex == -1 && endTokensIndex < endTokens.length)
                 endGameIndex = playByPlayData.indexOf(endTokens[endTokensIndex++], allPlysIndex);
-            }
 
             if (endGameIndex !== -1) {
                 const extractedPart = playByPlayData.substring(allPlysIndex, endGameIndex);
-                const modifiedPart = extractedPart.replace(/headline/g, '\nheadline');
+                const modifiedPart = extractedPart.replace(/"id":/g, '\n"id":');
                 const linesArray = modifiedPart.split('\n');
                 const subarrays = [];
                 let currentSubarray = [];
 
                 for (const line of linesArray) {
                     if (line.includes('plays,') || line.includes('play,')) {
-                        if (currentSubarray.length > 0) {
+                        if (currentSubarray.length > 0)
                             subarrays.push(currentSubarray);
-                        }
                         currentSubarray = [];
                     }
                     currentSubarray.push(line);
                 }
 
-                if (currentSubarray.length > 0) {
+                if (currentSubarray.length > 0)
                     subarrays.push(currentSubarray);
-                }
 
                 subarrays.shift();
                 return subarrays;
@@ -102,8 +99,10 @@ export const getDriveInfo = async (gameID) => {
     }
 }
 
-function getTeamName(data) {
-    return data.substring(data.lastIndexOf('teamName') + 'teamName":"'.length, data.lastIndexOf('","'));
+
+function getTeamName(driveHeader) {
+    const start = driveHeader.indexOf('teamName":"') + 'teamName":"'.length;
+    return driveHeader.substring(start, driveHeader.indexOf('","', start));
 }
 
 function format(input) {
@@ -114,6 +113,17 @@ function calculateAvgs(team) {
     let t;
     for (let i = 0; i < downs.length; i++) {
         t = team.Down[downs[i]];
+        if (t.Plays > 0)
+            t.avgDist = format(t.dist / t.Plays);
+        if (t.Plays > 0)
+            t.avgGain = format(t.Yards / t.Plays);
+        if (t.Rush > 0)
+            t.avgRush = format(t['Rush Yards'] / t.Rush);
+        if (t.Pass > 0)
+            t.avgPass = format(t['Pass Yards'] / t.Pass);
+    }
+    for (let i = 0; i < quarters.length; i++) {
+        t = team.Quarter[quarters[i]];
         if (t.Plays > 0)
             t.avgDist = format(t.dist / t.Plays);
         if (t.Plays > 0)
@@ -138,7 +148,6 @@ function netChangeInYardage(play, team) {
     let arr, brr;
 
     if (endIndex === -1) {
-        // display('', play);
         const atIndex = play.indexOf(' at ') + ' at '.length, commaIndex = play.indexOf('","'),
             toIndex = play.lastIndexOf(' to ') + ' to '.length, forIndex = play.lastIndexOf(' for ');
         arr = play.substring(atIndex, commaIndex).split(" ");
@@ -150,6 +159,11 @@ function netChangeInYardage(play, team) {
         }
 
     } else {
+        if (play.includes('SAFETY')) {
+            // Sack --> Fumble --> Safety : 2nd & 8 at WSH -4","isPlayHeader":false,"description":"(3:17 - 1st) (Shotgun) C.Wentz sacked at WAS -4 for -9 yards (C.Harris). FUMBLES (C.Harris) [C.Harris], touched at WAS -7, ball out of bounds in End Zone, SAFETY."}]
+            return play.substring(play.indexOf(' for ') + ' for '.length, play.indexOf(' yards '));
+        }
+        play = play.substring(0, endIndex + '."}'.length);
         const a1 = play.indexOf(' at '), a2 = play.lastIndexOf(' at ');
         const startStr = play.substring(a1 + ' at '.length, play.indexOf('","', a1)), endStr = play.substring(a2 + ' at '.length, endIndex);
         arr = startStr.split(" ");
@@ -179,6 +193,7 @@ const disqualifiers = ['Kickoff', 'kickoff', ' kicks ', ' Kick)', ' Punt ', ' pu
 const yardTokens = [' yards ', ' yards,', ' yard ', ' yard,', ' Yard ', ' Yds ', ' Yd ', ' yards.', ' Yrds ', ' Yrd ', ' yard.', ' yard; '];
 const passTokens = [' pass ', ' Pass ', ' intercepted ', 'INTERCEPTED', ' Interception ', 'sacked'];
 const downs = ['1st', '2nd', '3rd', '4th'];
+const quarters = [...downs, 'OT'];
 const interceptionTokens = [' intercepted ', 'INTERCEPTED', ' Interception '];
 const OFFENSIVE_HOLDING = ' Offensive Holding, 10 yards, enforced at ';
 
@@ -208,13 +223,13 @@ function isProblematicFumble(play) {
 }
 
 export const analyze = async (driveInfo) => {
-    const name2 = getTeamName(driveInfo[0][driveInfo[0].length - 1]);
-    let name1 = name2;
+    const name1 = getTeamName(driveInfo[0][0]);
+    let name2 = name1;
 
-    // Determine name1
-    let name1_index = 0;
+    // Determine name2
+    let name2_index = 0;
     while (name1 === name2)
-        name1 = getTeamName(driveInfo[name1_index][driveInfo[name1_index++].length - 1]);
+        name2 = getTeamName(driveInfo[name2_index++][0]);
 
     const team1 = {
         "Name": name1,
@@ -260,6 +275,11 @@ export const analyze = async (driveInfo) => {
                 "short left": 0, "short middle": 0, "short right": 0, "deep left": 0, "deep middle": 0, "deep right": 0, "sacked": 0, "unspecifiedRush": 0, "unspecifiedPass": 0,
             },
             "4th": {
+                "Plays": 0, "dist": 0, "Yards": 0, "Rush": 0, "Rush Yards": 0, "Pass": 0, "Pass Yards": 0, "Shotgun": 0, "No Huddle": 0,
+                "left end": 0, "left tackle": 0, "left guard": 0, "up the middle": 0, "right guard": 0, "right tackle": 0, "right end": 0, "kneels": 0,
+                "short left": 0, "short middle": 0, "short right": 0, "deep left": 0, "deep middle": 0, "deep right": 0, "sacked": 0, "unspecifiedRush": 0, "unspecifiedPass": 0,
+            },
+            "OT": {
                 "Plays": 0, "dist": 0, "Yards": 0, "Rush": 0, "Rush Yards": 0, "Pass": 0, "Pass Yards": 0, "Shotgun": 0, "No Huddle": 0,
                 "left end": 0, "left tackle": 0, "left guard": 0, "up the middle": 0, "right guard": 0, "right tackle": 0, "right end": 0, "kneels": 0,
                 "short left": 0, "short middle": 0, "short right": 0, "deep left": 0, "deep middle": 0, "deep right": 0, "sacked": 0, "unspecifiedRush": 0, "unspecifiedPass": 0,
@@ -312,12 +332,17 @@ export const analyze = async (driveInfo) => {
                 "left end": 0, "left tackle": 0, "left guard": 0, "up the middle": 0, "right guard": 0, "right tackle": 0, "right end": 0, "kneels": 0,
                 "short left": 0, "short middle": 0, "short right": 0, "deep left": 0, "deep middle": 0, "deep right": 0, "sacked": 0, "unspecifiedRush": 0, "unspecifiedPass": 0,
             },
+            "OT": {
+                "Plays": 0, "dist": 0, "Yards": 0, "Rush": 0, "Rush Yards": 0, "Pass": 0, "Pass Yards": 0, "Shotgun": 0, "No Huddle": 0,
+                "left end": 0, "left tackle": 0, "left guard": 0, "up the middle": 0, "right guard": 0, "right tackle": 0, "right end": 0, "kneels": 0,
+                "short left": 0, "short middle": 0, "short right": 0, "deep left": 0, "deep middle": 0, "deep right": 0, "sacked": 0, "unspecifiedRush": 0, "unspecifiedPass": 0,
+            },
         }
     };
     let currentTeam;
 
     for (let i = 0; i < driveInfo.length; i++) {
-        if (i === 0 || getTeamName(driveInfo[i - 1][driveInfo[i - 1].length - 1]) === team1.Name)
+        if (getTeamName(driveInfo[i][0]) === team1.Name)
             currentTeam = team1;
         else
             currentTeam = team2;
@@ -340,10 +365,8 @@ export const analyze = async (driveInfo) => {
                     let SAFE = false;
                     if ((currentPlay.includes(' Kick)') && !currentPlay.includes(' Fumble Return ')))
                         SAFE = true;
-                    if (!SAFE) {
-                        // display('', currentPlay);
+                    if (!SAFE)
                         continue;
-                    }
                 }
             }
 
@@ -354,7 +377,7 @@ export const analyze = async (driveInfo) => {
                 let dist_startIndex = currentPlay.indexOf(" ", a) + 1, dist_endIndex = currentPlay.indexOf(" ", dist_startIndex);
                 let dist = currentPlay.substring(dist_startIndex, dist_endIndex);
                 if (dist === 'Goal') {
-                    let distToGoalLine_end = currentPlay.indexOf(",") - 1, distToGoalLine_start = currentPlay.lastIndexOf(" ", distToGoalLine_end);
+                    let distToGoalLine_end = currentPlay.indexOf('","isPlayHeader'), distToGoalLine_start = currentPlay.lastIndexOf(" ", distToGoalLine_end);
                     dist = currentPlay.substring(distToGoalLine_start, distToGoalLine_end);
                 }
 
@@ -427,6 +450,9 @@ export const analyze = async (driveInfo) => {
 
                     // Accumulate passing and rushing gains
                     if (!currentPlay.includes(' Run ') && isPass(currentPlay)) {
+                        if (currentPlay.includes('Intentional Grounding'))
+                            gain = 0;
+
                         currentTeam.Down[down].Pass++;
                         currentTeam.Down[down]['Pass Yards'] += parseInt(gain);
                         currentTeam.Quarter[quarter].Pass++;
