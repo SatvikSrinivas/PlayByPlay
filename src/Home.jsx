@@ -14,7 +14,7 @@ function Home() {
             </p>
             <div className="button">
                 <button className="button" onClick={() => { navigate('/Search') }}>
-                    Discover meaningful insights derived from analyzing NFL play-by-play data
+                    Click here for insights derived from analyzing NFL play-by-play data
                 </button>
             </div>
             <img src={"https://aranceei.sirv.com/Images/nfl.jpg"} className="logo" />

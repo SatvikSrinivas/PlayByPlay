@@ -3,10 +3,8 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import './Search.css';
 import { getGameHeader, BACKEND } from './parser';
-import { useNavigate } from 'react-router-dom';
 
 function Search() {
-    const navigate = useNavigate();
     const [gameIDs, setGameIDs] = useState([]);
     const [gameHeaders, setGameHeaders] = useState({});
     const [year, setYear] = useState('');
@@ -95,6 +93,7 @@ function Search() {
                 <button className="search-button" onClick={fetchGames}>
                     Search
                 </button>
+                <p>Make sure to enter a valid week between 1 and 17 (or 18 since 2021)</p>
             </div>
             {loading ? (
                 <div className="Loader"></div>

@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 
 function Game() {
     const { gameID } = useParams();
-    const [result, setResult] = useState('No Result');
+    const [result, setResult] = useState('');
     const [driveInfo, setDriveInfo] = useState('No Drive Info');
     const [analysis, setAnalysis] = useState('No Analysis');
     const [team1, setTeam1] = useState(null);
