@@ -10,6 +10,8 @@ export const getGameHeader = async (gameID) => {
         const playByPlayData = response.data;
         const resultIndex = playByPlayData.indexOf('<title data-react-helmet="true">') + '<title data-react-helmet="true">'.length;
         let result = playByPlayData.substring(resultIndex, playByPlayData.indexOf("(", resultIndex));
+        if (!result.includes('-'))
+            return result; // Game hasn't been played yet
         let resultArr = result.split('-');
         let awayScore = resultArr[0].substring(resultArr[0].lastIndexOf(' ') + 1);
         let homeScore = resultArr[1].substring(0, resultArr[1].indexOf(' '));
@@ -19,7 +21,7 @@ export const getGameHeader = async (gameID) => {
         let awayTeamIndex = playByPlayData.indexOf('"away":') + '"away":'.length;
         awayTeamIndex = playByPlayData.indexOf('"abbrev":"', awayTeamIndex) + '"abbrev":"'.length;
         const awayTeam = playByPlayData.substring(awayTeamIndex, playByPlayData.indexOf('"', awayTeamIndex));
-        return [awayScore + " " + awayTeam + " @ " + homeTeam + " " + homeScore];
+        return awayScore + " " + awayTeam + " @ " + homeTeam + " " + homeScore;
     } catch (error) {
         console.error('Error:', error);
         throw error;
@@ -33,6 +35,8 @@ export const getGameResult = async (gameID) => {
         const resultIndex = playByPlayData.indexOf('<title data-react-helmet="true">') + '<title data-react-helmet="true">'.length;
         let result = playByPlayData.substring(resultIndex, playByPlayData.indexOf("(", resultIndex));
         let resultArr = result.split('-');
+        if (!result.includes('-'))
+            return [result, "awayTeam"];  // Game hasn't been played yet
         let awayScore = resultArr[0].substring(resultArr[0].lastIndexOf(' ') + 1);
         let homeScore = resultArr[1].substring(0, resultArr[1].indexOf(' '));
         let homeTeamIndex = playByPlayData.indexOf('"home":') + '"home":'.length;
@@ -63,7 +67,7 @@ export const getDriveInfo = async (gameID) => {
         }
         else if (allPlysIndex !== -1) {
             let endGameIndex = -1, endTokensIndex = 0;
-            while (endGameIndex == -1 && endTokensIndex < endTokens.length)
+            while (endGameIndex === -1 && endTokensIndex < endTokens.length)
                 endGameIndex = playByPlayData.indexOf(endTokens[endTokensIndex++], allPlysIndex);
 
             if (endGameIndex !== -1) {
@@ -92,6 +96,7 @@ export const getDriveInfo = async (gameID) => {
             }
         } else {
             console.log("'allPlys' not found in the play-by-play data");
+            return NO_PLAY_BY_PLAY;
         }
     } catch (error) {
         console.error('Error:', error);
