@@ -168,11 +168,24 @@ function netChangeInYardage(play, team) {
             // Sack --> Fumble --> Safety : 2nd & 8 at WSH -4","isPlayHeader":false,"description":"(3:17 - 1st) (Shotgun) C.Wentz sacked at WAS -4 for -9 yards (C.Harris). FUMBLES (C.Harris) [C.Harris], touched at WAS -7, ball out of bounds in End Zone, SAFETY."}]
             return play.substring(play.indexOf(' for ') + ' for '.length, play.indexOf(' yards '));
         }
-        play = play.substring(0, endIndex + '."}'.length);
+        const playStartIndex = Math.max(0, play.lastIndexOf('Officially'));
+        play = play.substring(playStartIndex, endIndex + '."}'.length);
 
-        // looking for ' to ' in 2023 games else default is ' at '
-        const a1 = play.indexOf(' at '), a2 = Math.max(play.lastIndexOf(' to '), play.lastIndexOf(' at '));
-        const startStr = play.substring(a1 + ' at '.length, play.indexOf('","', a1)), endStr = play.substring(a2 + ' at '.length, endIndex);
+        let a1, a2, startStr, endStr;
+        if (playStartIndex === 0) {
+            // looking for ' to ' in 2023 games else default is ' at '
+            a1 = play.indexOf(' at ');
+            a2 = Math.max(play.lastIndexOf(' to '), play.lastIndexOf(' at '));
+            startStr = play.substring(a1 + ' at '.length, play.indexOf('","', a1));
+            endStr = play.substring(a2 + ' at '.length, endIndex);
+        } else {
+            // Play includes 'Officially'
+            const yardEndIndex = play.lastIndexOf(' yards');
+            let yardStatement = play.substring(play.lastIndexOf(' ', yardEndIndex - 1) + 1, yardEndIndex);
+            if (play.includes('sack') && parseInt(yardStatement) > 0)
+                return '-' + yardStatement;
+            return yardStatement;
+        }
         arr = startStr.split(" ");
         brr = endStr.split(" ");
     }
@@ -366,16 +379,17 @@ export const analyze = async (driveInfo) => {
                 }
 
             let parseYardsFromFront = false;
+
+            // Moved parseYardsFromFront logic outside of disqualified block and added ' RECOVERED ' (DAL @ NYG fix 09.11.2023)
+            if (currentPlay.includes(' Pass From ') || currentPlay.includes(' RECOVERED '))
+                parseYardsFromFront = true;
+
             if (disqualified) {
-                if (currentPlay.includes(' Pass From '))
-                    parseYardsFromFront = true;
-                else {
-                    let SAFE = false;
-                    if ((currentPlay.includes(' Kick)') && !currentPlay.includes(' Fumble Return ')))
-                        SAFE = true;
-                    if (!SAFE)
-                        continue;
-                }
+                let SAFE = false;
+                if ((currentPlay.includes(' Kick)') && !currentPlay.includes(' Fumble Return ')))
+                    SAFE = true;
+                if (!SAFE)
+                    continue;
             }
 
             let a = currentPlay.indexOf('&');
