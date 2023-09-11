@@ -169,7 +169,9 @@ function netChangeInYardage(play, team) {
             return play.substring(play.indexOf(' for ') + ' for '.length, play.indexOf(' yards '));
         }
         play = play.substring(0, endIndex + '."}'.length);
-        const a1 = play.indexOf(' at '), a2 = play.lastIndexOf(' at ');
+
+        // looking for ' to ' in 2023 games else default is ' at '
+        const a1 = play.indexOf(' at '), a2 = Math.max(play.lastIndexOf(' to '), play.lastIndexOf(' at '));
         const startStr = play.substring(a1 + ' at '.length, play.indexOf('","', a1)), endStr = play.substring(a2 + ' at '.length, endIndex);
         arr = startStr.split(" ");
         brr = endStr.split(" ");
@@ -189,6 +191,7 @@ function netChangeInYardage(play, team) {
         brr[0] = 'OWN';
     else
         brr[0] = 'OPP';
+
     return getDistance(arr, brr);
 }
 
@@ -402,7 +405,6 @@ export const analyze = async (driveInfo) => {
                 currentTeam.Quarter[quarter].Plays++;
                 currentTeam.Quarter[quarter].dist += parseInt(dist);
 
-
                 // Accumulate Shotgun and No Huddle plays
                 if (currentPlay.includes('Shotgun')) {
                     currentTeam.Down[down].Shotgun++;
@@ -438,7 +440,12 @@ export const analyze = async (driveInfo) => {
                         // 'recovers' = self-recovery by fumbling player, 'recovered' = same team recovery, 'RECOVERED' = opposing team recovery
                         if (currentPlay.includes(' recovered ') && currentPlay.includes(' sacked ')) // if a sack fumble is advanced by the fumbling team, yards aren't added to offensive stats
                             gain = 0;
+                        const prevGain = gain;
                         gain = Math.min(gain, netChangeInYardage(currentPlay, currentTeam));
+                        if (isNaN(gain)) {
+                            // Crude bug fix but handles errors in case of a Lateral that doesn't result in a fumble
+                            gain = prevGain;
+                        }
                     }
                 }
 
