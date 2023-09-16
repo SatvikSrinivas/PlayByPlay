@@ -162,7 +162,6 @@ function netChangeInYardage(play, team) {
             const l = play.lastIndexOf('."}');
             brr = play.substring(play.lastIndexOf(' at ', l) + ' at '.length, l).split(" ");
         }
-
     } else {
         if (play.includes('SAFETY')) {
             // Sack --> Fumble --> Safety : 2nd & 8 at WSH -4","isPlayHeader":false,"description":"(3:17 - 1st) (Shotgun) C.Wentz sacked at WAS -4 for -9 yards (C.Harris). FUMBLES (C.Harris) [C.Harris], touched at WAS -7, ball out of bounds in End Zone, SAFETY."}]
@@ -176,6 +175,11 @@ function netChangeInYardage(play, team) {
             // looking for ' to ' in 2023 games else default is ' at '
             a1 = play.indexOf(' at ');
             a2 = Math.max(play.lastIndexOf(' to '), play.lastIndexOf(' at '));
+            const r = play.indexOf('RECOVERED');
+            if (r > -1) {
+                // K.Cousins sacked at MIN 18 for -8 yards (J.Sweat). FUMBLES (J.Sweat) [J.Sweat], RECOVERED by PHI-F.Cox at MIN 15. F.Cox to MIN 7 for 8 yards (E.Ingram)."
+                a2 = play.indexOf(' at ', r);
+            }
             startStr = play.substring(a1 + ' at '.length, play.indexOf('","', a1));
             endStr = play.substring(a2 + ' at '.length, endIndex);
         } else {
@@ -455,7 +459,8 @@ export const analyze = async (driveInfo) => {
                         if (currentPlay.includes(' recovered ') && currentPlay.includes(' sacked ')) // if a sack fumble is advanced by the fumbling team, yards aren't added to offensive stats
                             gain = 0;
                         const prevGain = gain;
-                        gain = Math.min(gain, netChangeInYardage(currentPlay, currentTeam));
+                        if (!currentPlay.includes('REVERSED')) // Crude bug fix but handles MIN @ PHI case of Jefferson fumble resulting in touchback 09.14.23
+                            gain = Math.min(gain, netChangeInYardage(currentPlay, currentTeam));
                         if (isNaN(gain)) {
                             // Crude bug fix but handles errors in case of a Lateral that doesn't result in a fumble
                             gain = prevGain;
