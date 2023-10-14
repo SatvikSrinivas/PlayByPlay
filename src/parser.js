@@ -214,7 +214,7 @@ function netChangeInYardage(play, team) {
 
 // Key Tokens:
 const disqualifiers = ['Kickoff', 'kickoff', ' kicks ', ' Kick)', ' Punt ', ' punts ', ' field goal ', ' Field Goal ', 'timeout; ',
-    ' penalty ', 'quarter.', ' 2 minute warning.', 'No Play'];
+    ' penalty ', 'quarter.', ' 2 minute warning.', 'No Play', 'Yd Field Goal'];
 const yardTokens = [' yards ', ' yards,', ' yard ', ' yard,', ' Yard ', ' Yds ', ' Yd ', ' yards.', ' Yrds ', ' Yrd ', ' yard.', ' yard; '];
 const passTokens = [' pass ', ' Pass ', ' intercepted ', 'INTERCEPTED', ' Interception ', 'sacked'];
 const downs = ['1st', '2nd', '3rd', '4th'];
