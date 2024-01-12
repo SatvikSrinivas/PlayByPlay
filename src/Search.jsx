@@ -56,9 +56,10 @@ function Search() {
 
             $('a.AnchorLink').each((index, element) => {
                 const href = $(element).attr('href');
-                const match = href.match(/nfl\/game\?gameId=(\d+)$/);
-                if (match) {
-                    games.push(match[1]);
+                const start = href.indexOf('gameId='), end = href.indexOf('&', start)
+                if (start > -1) {
+                    const gameId = href.substring(start + 'gameId='.length, end);
+                    games.push(gameId);
                 }
             });
 

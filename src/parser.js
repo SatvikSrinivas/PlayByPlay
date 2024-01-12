@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { teamNameMap } from './teamNameMap.js';
+import { teamNameMap, teamAbbreviationMap } from './teamNameMap.js';
 
 const PRODUCTION = true;
 export const BACKEND = PRODUCTION ? 'https://playbyplay-backend.onrender.com' : ".";
@@ -10,18 +10,31 @@ export const getGameHeader = async (gameID) => {
         const playByPlayData = response.data;
         const resultIndex = playByPlayData.indexOf('<title data-react-helmet="true">') + '<title data-react-helmet="true">'.length;
         let result = playByPlayData.substring(resultIndex, playByPlayData.indexOf("(", resultIndex));
+        let resultArr = result.split('-');
+
         if (!result.includes('-'))
             return result; // Game hasn't been played yet
-        let resultArr = result.split('-');
+        // NOTE: As of 1/12/24 --> Result is provided in the following fashion: Winning Team - Losing Team
+        // In the current format we don't have information about home / away and will always display score with Winning team first
+        // In the case of a tie, order doesn't matter
+
+        const winningTeam = result.substring(0, result.indexOf(' '));
         let awayScore = resultArr[0].substring(resultArr[0].lastIndexOf(' ') + 1);
         let homeScore = resultArr[1].substring(0, resultArr[1].indexOf(' '));
         let homeTeamIndex = playByPlayData.indexOf('"home":') + '"home":'.length;
         homeTeamIndex = playByPlayData.indexOf('"abbrev":"', homeTeamIndex) + '"abbrev":"'.length;
-        const homeTeam = playByPlayData.substring(homeTeamIndex, playByPlayData.indexOf('"', homeTeamIndex));
+        const homeTeamAbbreviation = playByPlayData.substring(homeTeamIndex, playByPlayData.indexOf('"', homeTeamIndex));
         let awayTeamIndex = playByPlayData.indexOf('"away":') + '"away":'.length;
         awayTeamIndex = playByPlayData.indexOf('"abbrev":"', awayTeamIndex) + '"abbrev":"'.length;
-        const awayTeam = playByPlayData.substring(awayTeamIndex, playByPlayData.indexOf('"', awayTeamIndex));
-        return awayScore + " " + awayTeam + " @ " + homeTeam + " " + homeScore;
+        const awayTeamAbbreviation = playByPlayData.substring(awayTeamIndex, playByPlayData.indexOf('"', awayTeamIndex));
+
+        if (teamAbbreviationMap[homeTeamAbbreviation] === winningTeam) { // if home team won swap the scores
+            let temp = awayScore;
+            awayScore = homeScore;
+            homeScore = temp;
+        }
+
+        return awayScore + " " + awayTeamAbbreviation + " @ " + homeTeamAbbreviation + " " + homeScore
     } catch (error) {
         console.error('Error:', error);
         throw error;
@@ -35,17 +48,29 @@ export const getGameResult = async (gameID) => {
         const resultIndex = playByPlayData.indexOf('<title data-react-helmet="true">') + '<title data-react-helmet="true">'.length;
         let result = playByPlayData.substring(resultIndex, playByPlayData.indexOf("(", resultIndex));
         let resultArr = result.split('-');
+
         if (!result.includes('-'))
-            return [result, "awayTeam"];  // Game hasn't been played yet
+            return result; // Game hasn't been played yet
+        // NOTE: As of 1/12/24 --> Result is provided in the following fashion: Winning Team - Losing Team
+        // In the current format we don't have information about home / away and will always display score with Winning team first
+        // In the case of a tie, order doesn't matter
+
+        const winningTeam = result.substring(0, result.indexOf(' '));
         let awayScore = resultArr[0].substring(resultArr[0].lastIndexOf(' ') + 1);
         let homeScore = resultArr[1].substring(0, resultArr[1].indexOf(' '));
         let homeTeamIndex = playByPlayData.indexOf('"home":') + '"home":'.length;
         homeTeamIndex = playByPlayData.indexOf('"abbrev":"', homeTeamIndex) + '"abbrev":"'.length;
-        const homeTeam = playByPlayData.substring(homeTeamIndex, playByPlayData.indexOf('"', homeTeamIndex));
+        const homeTeamAbbreviation = playByPlayData.substring(homeTeamIndex, playByPlayData.indexOf('"', homeTeamIndex));
         let awayTeamIndex = playByPlayData.indexOf('"away":') + '"away":'.length;
         awayTeamIndex = playByPlayData.indexOf('"abbrev":"', awayTeamIndex) + '"abbrev":"'.length;
-        const awayTeam = playByPlayData.substring(awayTeamIndex, playByPlayData.indexOf('"', awayTeamIndex));
-        return [awayScore + " " + awayTeam + " @ " + homeTeam + " " + homeScore, awayTeam];
+        const awayTeamAbbreviation = playByPlayData.substring(awayTeamIndex, playByPlayData.indexOf('"', awayTeamIndex));
+
+        if (teamAbbreviationMap[homeTeamAbbreviation] === winningTeam) { // if home team won swap the scores
+            let temp = awayScore;
+            awayScore = homeScore;
+            homeScore = temp;
+        }
+        return [awayScore + " " + awayTeamAbbreviation + " @ " + homeTeamAbbreviation + " " + homeScore, awayTeamAbbreviation];
     } catch (error) {
         console.error('Error:', error);
         throw error;
