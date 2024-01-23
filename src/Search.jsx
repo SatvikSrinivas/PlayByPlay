@@ -56,13 +56,17 @@ function Search() {
 
             $('a.AnchorLink').each((index, element) => {
                 const href = $(element).attr('href');
-                const start = href.indexOf('gameId='), end = href.indexOf('&', start)
+                const startToken = '/nfl/game/_/gameId/';
+                let start = href.indexOf(startToken);
                 if (start > -1) {
-                    const gameId = href.substring(start + 'gameId='.length, end);
+                    start += startToken.length;
+                    const end = href.indexOf('/', start);
+                    const gameId = href.substring(start, end);
                     games.push(gameId);
                 }
             });
 
+            console.log(games)
             return { week, games };
         } catch (error) {
             console.error('Error:', error);
