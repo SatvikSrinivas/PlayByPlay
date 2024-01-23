@@ -66,7 +66,6 @@ function Search() {
                 }
             });
 
-            console.log(games)
             return { week, games };
         } catch (error) {
             console.error('Error:', error);
